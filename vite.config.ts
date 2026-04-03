@@ -2,7 +2,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/AIRS-H5/",
+  base: "/",
   plugins: [react()],
   server: {
     port: 5173
