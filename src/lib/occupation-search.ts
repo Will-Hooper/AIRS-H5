@@ -1,3 +1,12 @@
+import {
+  CATEGORY_FALLBACKS,
+  CHINA_P0_SEARCH_SEEDS,
+  CHINA_P05_SEARCH_SEEDS,
+  COMMON_OCCUPATION_SEARCH_SEEDS,
+  POPULAR_SEARCH_ENTRY_IDS,
+  type OccupationSearchSeedAliasInput,
+  type OccupationSearchSeedEntry
+} from "./occupation-search-seeds";
 import type {
   OccupationAliasType,
   OccupationRow,
@@ -6,31 +15,6 @@ import type {
   OccupationSearchMatchType,
   OccupationSearchPayload
 } from "./types";
-
-interface OccupationSearchSeedAliasInput {
-  alias: string;
-  aliasType?: OccupationAliasType;
-  weight?: number;
-  source?: "seed_manual" | "seed_generated" | "log_derived";
-}
-
-interface OccupationSearchSeedEntry {
-  id: string;
-  occupationId: string;
-  label: string;
-  labelEn?: string;
-  categoryLv1: string;
-  categoryLv2: string;
-  analysisTemplateId: string;
-  searchPriority: number;
-  aliases: Array<string | OccupationSearchSeedAliasInput>;
-}
-
-interface OccupationSearchCategoryFallback {
-  label: string;
-  keywords: string[];
-  entryIds: string[];
-}
 
 interface SearchEntry {
   id: string;
@@ -64,6 +48,8 @@ const STRIP_YUAN_BASES = new Set([
   "审单"
 ]);
 
+const WEAK_SUFFIX_EXCEPTIONS = new Set(["律师助理", "法律助理"]);
+
 const AUTO_CATEGORY_MAP = new Map<string, { categoryLv1: string; categoryLv2: string }>([
   ["Office and Administrative Support", { categoryLv1: "文职", categoryLv2: "综合" }],
   ["Business and Financial Operations", { categoryLv1: "文职", categoryLv2: "商务" }],
@@ -80,197 +66,6 @@ const AUTO_CATEGORY_MAP = new Map<string, { categoryLv1: string; categoryLv2: st
   ["Building and Grounds Cleaning and Maintenance", { categoryLv1: "服务", categoryLv2: "保洁" }],
   ["Personal Care and Service", { categoryLv1: "服务", categoryLv2: "个人服务" }]
 ]);
-
-const COMMON_OCCUPATION_SEARCH_SEEDS: OccupationSearchSeedEntry[] = [
-  {
-    id: "common:admin-clerk",
-    occupationId: "43-9061.00",
-    label: "行政文员",
-    labelEn: "Administrative Clerk",
-    categoryLv1: "文职",
-    categoryLv2: "行政",
-    analysisTemplateId: "soc:43-9061.00",
-    searchPriority: 110,
-    aliases: ["行政文员", "行政", "文员", "办公室文员", "办公室内勤", "内勤", "做表格", "做表格的"]
-  },
-  {
-    id: "common:receptionist",
-    occupationId: "43-4171.00",
-    label: "前台接待",
-    labelEn: "Receptionist",
-    categoryLv1: "文职",
-    categoryLv2: "前台",
-    analysisTemplateId: "soc:43-4171.00",
-    searchPriority: 96,
-    aliases: ["前台", "前台接待", "接待", "接待文员", "接待员"]
-  },
-  {
-    id: "common:hr-specialist",
-    occupationId: "13-1071.00",
-    label: "人力资源专员",
-    labelEn: "Human Resources Specialist",
-    categoryLv1: "文职",
-    categoryLv2: "人事",
-    analysisTemplateId: "soc:13-1071.00",
-    searchPriority: 108,
-    aliases: ["人力资源", "人事", "人事专员", "hr", "招聘专员", "招聘", "招人的", "做人事的"]
-  },
-  {
-    id: "common:customer-service",
-    occupationId: "43-4051.00",
-    label: "客服专员",
-    labelEn: "Customer Service Representative",
-    categoryLv1: "服务",
-    categoryLv2: "客服",
-    analysisTemplateId: "soc:43-4051.00",
-    searchPriority: 108,
-    aliases: ["客服", "客服专员", "客户服务", "售后客服", "在线客服", "电话客服", "客诉"]
-  },
-  {
-    id: "common:accountant",
-    occupationId: "13-2011.00",
-    label: "会计",
-    labelEn: "Accountant",
-    categoryLv1: "文职",
-    categoryLv2: "财务",
-    analysisTemplateId: "soc:13-2011.00",
-    searchPriority: 104,
-    aliases: ["会计", "会计师", "财务会计", "总账会计", "财务", "做账", "做账的"]
-  },
-  {
-    id: "common:ecommerce-operator",
-    occupationId: "13-1161.00",
-    label: "电商运营",
-    labelEn: "E-Commerce Operations Specialist",
-    categoryLv1: "运营",
-    categoryLv2: "电商",
-    analysisTemplateId: "soc:13-1161.00",
-    searchPriority: 112,
-    aliases: ["电商运营", "电商", "淘宝运营", "天猫运营", "店铺运营", "运营专员", "搞电商的"]
-  },
-  {
-    id: "common:new-media-operator",
-    occupationId: "13-1161.00",
-    label: "新媒体运营",
-    labelEn: "New Media Operations Specialist",
-    categoryLv1: "运营",
-    categoryLv2: "内容",
-    analysisTemplateId: "soc:13-1161.00",
-    searchPriority: 110,
-    aliases: ["新媒体运营", "内容运营", "公众号运营", "社媒运营", "做内容的"]
-  },
-  {
-    id: "common:douyin-operator",
-    occupationId: "13-1161.00",
-    label: "抖音运营",
-    labelEn: "Douyin Operations Specialist",
-    categoryLv1: "运营",
-    categoryLv2: "短视频",
-    analysisTemplateId: "soc:13-1161.00",
-    searchPriority: 114,
-    aliases: ["抖音运营", "做抖音的", "抖音", "短视频运营"]
-  },
-  {
-    id: "common:livestream-host",
-    occupationId: "41-9011.00",
-    label: "带货主播",
-    labelEn: "Livestream Host",
-    categoryLv1: "内容",
-    categoryLv2: "直播",
-    analysisTemplateId: "soc:41-9011.00",
-    searchPriority: 112,
-    aliases: ["带货主播", "主播", "直播带货", "做直播带货", "卖货主播"]
-  },
-  {
-    id: "common:video-editor",
-    occupationId: "27-4032.00",
-    label: "视频剪辑",
-    labelEn: "Video Editor",
-    categoryLv1: "内容",
-    categoryLv2: "视频",
-    analysisTemplateId: "soc:27-4032.00",
-    searchPriority: 110,
-    aliases: ["视频剪辑", "剪辑师", "视频后期", "短视频剪辑", "剪视频", "拍视频", "拍视频的"]
-  },
-  {
-    id: "common:graphic-designer",
-    occupationId: "27-1024.00",
-    label: "平面设计师",
-    labelEn: "Graphic Designer",
-    categoryLv1: "设计",
-    categoryLv2: "平面",
-    analysisTemplateId: "soc:27-1024.00",
-    searchPriority: 106,
-    aliases: ["平面设计", "平面设计师", "美工", "视觉设计", "海报设计"]
-  },
-  {
-    id: "common:software-developer",
-    occupationId: "15-1252.00",
-    label: "软件开发工程师",
-    labelEn: "Software Developer",
-    categoryLv1: "技术",
-    categoryLv2: "开发",
-    analysisTemplateId: "soc:15-1252.00",
-    searchPriority: 112,
-    aliases: ["程序员", "软件开发", "软件工程师", "开发工程师", "开发", "码农", { alias: "it", aliasType: "abbreviation", weight: 98 }]
-  },
-  {
-    id: "common:data-analyst",
-    occupationId: "15-2031.00",
-    label: "数据分析师",
-    labelEn: "Data Analyst",
-    categoryLv1: "技术",
-    categoryLv2: "数据",
-    analysisTemplateId: "soc:15-2031.00",
-    searchPriority: 102,
-    aliases: ["数据分析", "数据分析师", "商业分析", "数据运营"]
-  },
-  {
-    id: "common:product-manager",
-    occupationId: "13-1082.00",
-    label: "产品经理",
-    labelEn: "Product Manager",
-    categoryLv1: "运营",
-    categoryLv2: "产品",
-    analysisTemplateId: "soc:13-1082.00",
-    searchPriority: 98,
-    aliases: ["产品经理", "产品策划", "产品", "产品岗"]
-  }
-];
-
-const POPULAR_SEARCH_ENTRY_IDS = [
-  "common:admin-clerk",
-  "common:hr-specialist",
-  "common:customer-service",
-  "common:douyin-operator",
-  "common:livestream-host",
-  "common:software-developer",
-  "common:accountant",
-  "common:video-editor"
-];
-
-const CATEGORY_FALLBACKS: OccupationSearchCategoryFallback[] = [
-  {
-    label: "文职",
-    keywords: ["文员", "行政", "办公室", "内勤", "前台", "人事", "财务"],
-    entryIds: ["common:admin-clerk", "common:receptionist", "common:hr-specialist", "common:accountant"]
-  },
-  {
-    label: "运营",
-    keywords: ["运营", "抖音", "短视频", "电商", "新媒体", "直播"],
-    entryIds: ["common:douyin-operator", "common:new-media-operator", "common:ecommerce-operator", "common:product-manager"]
-  },
-  {
-    label: "内容",
-    keywords: ["剪辑", "视频", "主播", "带货", "拍视频"],
-    entryIds: ["common:video-editor", "common:livestream-host", "common:new-media-operator", "common:douyin-operator"]
-  },
-  {
-    label: "技术",
-    keywords: ["程序员", "开发", "it", "数据", "产品"],
-    entryIds: ["common:software-developer", "common:data-analyst", "common:product-manager"]
-  }
-];
 
 function toHalfWidth(value: string) {
   return value.replace(/[\uFF01-\uFF5E]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xFEE0)).replace(/\u3000/g, " ");
@@ -296,7 +91,7 @@ export function normalizeOccupationQuery(value: unknown) {
     .trim();
 
   ["专员", "助理", "顾问", "老师", "师傅", "人员", "岗"].forEach((suffix) => {
-    if (normalized.length > suffix.length + 1 && normalized.endsWith(suffix)) {
+    if (!WEAK_SUFFIX_EXCEPTIONS.has(normalized) && normalized.length > suffix.length + 1 && normalized.endsWith(suffix)) {
       normalized = normalized.slice(0, -suffix.length).trim();
     }
   });
@@ -481,12 +276,7 @@ function autoEntryForRow(row: OccupationRow): SearchEntry {
     categoryLv2: categories.categoryLv2,
     analysisTemplateId: `soc:${row.socCode}`,
     searchPriority: Math.max(40, Math.round(Number(row.airs || 0))),
-    aliases: buildAliasRecords([
-      ...(Array.isArray(row.searchIndex) ? row.searchIndex : []),
-      row.titleZh || "",
-      row.title || "",
-      row.socCode || ""
-    ], "airs_dataset", label)
+    aliases: buildAliasRecords([row.titleZh || "", row.title || "", row.socCode || ""], "airs_dataset", label)
   };
 }
 
@@ -507,7 +297,7 @@ function seedEntryForRow(seed: OccupationSearchSeedEntry, row: OccupationRow): S
 function buildEntries(rows: OccupationRow[]) {
   const rowsBySocCode = new Map(rows.map((row) => [row.socCode, row]));
   const autoEntries = rows.map(autoEntryForRow);
-  const seedEntries = COMMON_OCCUPATION_SEARCH_SEEDS
+  const seedEntries = [...COMMON_OCCUPATION_SEARCH_SEEDS, ...CHINA_P0_SEARCH_SEEDS, ...CHINA_P05_SEARCH_SEEDS]
     .map((seed) => {
       const occupation = rowsBySocCode.get(seed.occupationId);
       return occupation ? seedEntryForRow(seed, occupation) : null;
@@ -554,9 +344,9 @@ function dedupeByOccupation(scoredEntries: ScoredEntry[]) {
   });
 
   return [...byOccupation.values()].sort((left, right) =>
-    right.score - left.score
-    || right.entry.searchPriority - left.entry.searchPriority
-    || String(left.entry.label).localeCompare(String(right.entry.label), "zh-Hans-CN")
+    right.score - left.score ||
+    right.entry.searchPriority - left.entry.searchPriority ||
+    String(left.entry.label).localeCompare(String(right.entry.label), "zh-Hans-CN")
   );
 }
 
@@ -571,7 +361,7 @@ function dedupeHitsByLabel(hits: OccupationSearchHit[]) {
 }
 
 function isCuratedEntry(entry: SearchEntry) {
-  return entry.id.startsWith("common:");
+  return entry.id.startsWith("common:") || entry.id.startsWith("china:");
 }
 
 function relatedAlternatives(entries: SearchEntry[], primary: OccupationSearchHit, normalizedQuery: string) {
