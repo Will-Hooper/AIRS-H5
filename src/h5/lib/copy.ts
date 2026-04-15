@@ -7,7 +7,6 @@ interface H5Copy {
   appName: string;
   moduleKicker: string;
   homeTitle: string;
-  homeIntro: string;
   sourceNote: string;
   averageLabel: string;
   searchPlaceholder: string;
@@ -60,7 +59,6 @@ export const h5Messages: Record<H5Language, H5Copy> = {
     appName: "AIRS",
     moduleKicker: "AIRS / H5",
     homeTitle: "Will AI replace your occupation?",
-    homeIntro: "Mobile quick check. H5 only keeps the short path: query, read, break down, share.",
     sourceNote: "Occupation counts and classification standards are based on the U.S. Standard Occupational Classification (SOC) system.",
     averageLabel: "Current AIRS average",
     searchPlaceholder: "Check the AIRS score of your occupation",
@@ -111,7 +109,6 @@ export const h5Messages: Record<H5Language, H5Copy> = {
     appName: "AIRS",
     moduleKicker: "AIRS / H5",
     homeTitle: "AI会取代你的职业吗？",
-    homeIntro: "H5 只保留短链路：查询、解读、拆解、分享，不再挂靠桌面端页面结构。",
     sourceNote: "职业数的来源和分类标准来自美国标准职业分类系统（SOC）。",
     averageLabel: "当前 AIRS 平均指数",
     searchPlaceholder: "搜搜看你的职业AIRS值是多少",

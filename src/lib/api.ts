@@ -1,4 +1,5 @@
 import { translateOccupationDefinition, translateOccupationTasks, translateOccupationTitle, withTranslatedOccupationTitle } from "./occupation-translation";
+import { getOccupationSuggestions, searchOccupationsByQuery } from "./occupation-search";
 import type {
   JsonDataset,
   JsonDatasetOccupation,
@@ -7,6 +8,7 @@ import type {
   OccupationListPayload,
   OccupationQueryParams,
   OccupationRow,
+  OccupationSearchPayload,
   SummaryPayload
 } from "./types";
 
@@ -858,4 +860,16 @@ export async function getOccupationDetail(socCode: string, params: OccupationQue
     regions: meta.regions,
     occupation: mapJsonOccupation(matched, region)
   };
+}
+
+export async function searchOccupations(query: string, params: OccupationQueryParams = {}): Promise<OccupationSearchPayload> {
+  const dataset = await loadDataset();
+  const rows = buildRows(dataset, params);
+  return searchOccupationsByQuery(rows, query);
+}
+
+export async function getSearchSuggestions(query: string, params: OccupationQueryParams = {}) {
+  const dataset = await loadDataset();
+  const rows = buildRows(dataset, params);
+  return getOccupationSuggestions(rows, query);
 }

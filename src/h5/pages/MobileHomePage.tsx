@@ -83,25 +83,32 @@ export function MobileHomePage() {
             <div className="space-y-3">
               <p className="h5-kicker">{copy.appName}</p>
               <h1 className="text-4xl font-semibold leading-tight tracking-[-0.06em] text-white">{copy.homeTitle}</h1>
-              <p className="mx-auto max-w-[32rem] text-sm leading-7 text-white/62">{copy.homeIntro}</p>
             </div>
 
             <div className="mx-auto max-w-[420px] space-y-4">
               <H5SearchCombobox
                 language={language}
                 placeholder={copy.searchPlaceholder}
+                analyticsSource="h5-home"
                 value={query}
-                onCommit={(nextQuery, occupation) => {
+                onQueryChange={setQuery}
+                onCommit={(nextQuery, selection, payload) => {
                   setQuery(nextQuery);
                   void trackSearchEvent({
                     query: nextQuery,
                     source: "h5-home",
                     language,
-                    occupation
+                    occupation: selection?.occupation,
+                    searchLabel: selection?.label,
+                    matchType: payload?.matchType || selection?.matchType,
+                    matchedAlias: selection?.matchedAlias,
+                    resultCount: payload?.resultCount,
+                    isZeroResult: !payload?.primaryResult,
+                    didClickResult: Boolean(selection)
                   });
                 }}
-                onSelect={(occupation) => {
-                  navigate(`/occupation/${encodeURIComponent(occupation.socCode)}?lang=${language}`);
+                onSelect={(selection) => {
+                  navigate(`/occupation/${encodeURIComponent(selection.occupation.socCode)}?lang=${language}&entry=${encodeURIComponent(selection.label)}`);
                 }}
               />
             </div>
