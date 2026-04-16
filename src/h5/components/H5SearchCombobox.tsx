@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { searchOccupations } from "../../lib/api";
 import type { SearchEventSource } from "../../lib/analytics";
-import type { H5Language } from "../lib/language";
 import type { OccupationSearchHit, OccupationSearchPayload } from "../../lib/types";
+import { useOccupationSearchCombobox } from "../../shared/useOccupationSearchCombobox";
+import type { H5Language } from "../lib/language";
 import { OccupationSearchFeedback } from "./OccupationSearchFeedback";
 
 interface H5SearchComboboxProps {
@@ -26,95 +25,36 @@ export function H5SearchCombobox({
   onQueryChange,
   className = ""
 }: H5SearchComboboxProps) {
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const [query, setQuery] = useState(value);
-  const [suggestions, setSuggestions] = useState<OccupationSearchHit[]>([]);
-  const [open, setOpen] = useState(false);
-  const [searchPayload, setSearchPayload] = useState<OccupationSearchPayload | null>(null);
-  const [isComposing, setIsComposing] = useState(false);
-
-  useEffect(() => {
-    setQuery(value);
-  }, [value]);
-
-  useEffect(() => {
-    if (!open && !query.trim()) {
-      setSuggestions([]);
-      setSearchPayload(null);
-      return;
-    }
-
-    let cancelled = false;
-    const timer = window.setTimeout(async () => {
-      try {
-        const payload = await searchOccupations(query);
-        if (cancelled) return;
-        setSearchPayload(payload);
-        setSuggestions((payload.suggestions.length ? payload.suggestions : payload.popularSearches).slice(0, 6));
-      } catch {
-        if (cancelled) return;
-        setSuggestions([]);
-        setSearchPayload(null);
-      }
-    }, 120);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [open, query]);
-
-  const submitFirstMatch = () => {
-    if (!searchPayload?.primaryResult) {
-      onCommit?.(query, null, searchPayload);
-      return;
-    }
-
-    const committedQuery = query.trim() || searchPayload.primaryResult.label;
-    onCommit?.(committedQuery, searchPayload.primaryResult, searchPayload);
-    onSelect(searchPayload.primaryResult);
-    setOpen(false);
-  };
-
-  const closeIfFocusLeft = () => {
-    window.setTimeout(() => {
-      const activeElement = document.activeElement;
-      if (rootRef.current && activeElement instanceof Node && rootRef.current.contains(activeElement)) {
-        return;
-      }
-      setOpen(false);
-    }, 0);
-  };
+  const {
+    query,
+    suggestions,
+    open,
+    searchPayload,
+    setOpen,
+    handleInputChange,
+    handleCompositionStart,
+    handleCompositionUpdate,
+    handleCompositionEnd,
+    handleKeyDown,
+    handleSuggestionSelect
+  } = useOccupationSearchCombobox({
+    value,
+    onSelect,
+    onCommit,
+    onQueryChange
+  });
 
   return (
-    <div ref={rootRef} className={`relative ${className}`.trim()}>
+    <div className={`relative ${className}`.trim()}>
       <input
         value={query}
         onFocus={() => setOpen(true)}
-        onBlur={closeIfFocusLeft}
-        onChange={(event) => {
-          setQuery(event.target.value);
-          onQueryChange?.(event.target.value);
-          setOpen(true);
-        }}
-        onCompositionStart={() => setIsComposing(true)}
-        onCompositionEnd={(event) => {
-          setIsComposing(false);
-          setQuery(event.currentTarget.value);
-          onQueryChange?.(event.currentTarget.value);
-          setOpen(true);
-        }}
-        onKeyDown={(event) => {
-          const nativeEvent = event.nativeEvent as KeyboardEvent & { isComposing?: boolean };
-          if (isComposing || nativeEvent.isComposing || nativeEvent.keyCode === 229) {
-            return;
-          }
-
-          if (event.key === "Enter") {
-            event.preventDefault();
-            submitFirstMatch();
-          }
-        }}
+        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+        onChange={(event) => handleInputChange(event.target.value)}
+        onCompositionStart={handleCompositionStart}
+        onCompositionUpdate={(event) => handleCompositionUpdate(event.currentTarget.value)}
+        onCompositionEnd={(event) => handleCompositionEnd(event.currentTarget.value)}
+        onKeyDown={handleKeyDown}
         className="h5-input"
         placeholder={placeholder}
       />
@@ -125,12 +65,7 @@ export function H5SearchCombobox({
               key={suggestion.id}
               type="button"
               onMouseDown={(event) => event.preventDefault()}
-              onClick={() => {
-                const committedQuery = query.trim() || suggestion.label;
-                onCommit?.(committedQuery, suggestion, searchPayload);
-                onSelect(suggestion);
-                setOpen(false);
-              }}
+              onClick={() => handleSuggestionSelect(suggestion)}
               className="flex w-full flex-col gap-1 border-b border-white/6 px-4 py-3 text-left transition hover:bg-white/5 last:border-b-0"
             >
               <span className="text-sm font-medium text-white">
