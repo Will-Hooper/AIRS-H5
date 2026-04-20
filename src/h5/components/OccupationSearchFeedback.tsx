@@ -40,7 +40,7 @@ export function OccupationSearchFeedback({
   };
 
   return (
-    <div className="border-t border-white/8 px-4 py-4">
+    <div className="airs-feedback-shell border-t border-white/8 px-4 py-4">
       <p className="text-xs font-medium text-white/82">
         {isZh ? "没找到你的职业？告诉我们你怎么称呼这份工作" : "Didn't find the right role? Tell us what you call this job."}
       </p>
@@ -51,13 +51,13 @@ export function OccupationSearchFeedback({
         <input
           value={feedbackText}
           onChange={(event) => setFeedbackText(event.target.value)}
-          className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 focus:border-white/20"
+          className="airs-feedback-input"
           placeholder={isZh ? "例如：仓库发货、店播中控、直播投流" : "Example: warehouse shipping, store livestream control"}
         />
         <div className="flex items-center justify-between gap-3">
           <button
             type="button"
-            className="rounded-2xl border border-white/12 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/8 disabled:cursor-not-allowed disabled:opacity-50"
+            className="airs-feedback-button"
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => void submitFeedback()}
             disabled={!feedbackText.trim() || submitting}
